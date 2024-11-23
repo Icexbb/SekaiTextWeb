@@ -269,7 +269,7 @@ const copyChar = (value: string) => {
                 :collapsed-width="40"
                 :width="240"
                 :collapsed="menuCollapsed"
-                show-trigger="bar"
+                :show-trigger="false"
 
                 @collapse="()=>{menuCollapsed = true}"
                 @expand="()=>{menuCollapsed = false}"
@@ -283,25 +283,24 @@ const copyChar = (value: string) => {
             </n-layout-sider>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
-                    <n-grid :cols="5">
+                    <n-grid :cols="6">
                         <n-gi span="3">
                             <n-statistic label="剧本文件">
                                 <n-text>{{ currentScriptId.length == 0 ? "未选择" : currentScriptId }}</n-text>
                             </n-statistic>
                         </n-gi>
-                        <n-gi>
+                        <n-gi offset="1">
                             <n-statistic label="剧本长度" :value="currentScript.length"/>
                         </n-gi>
                         <n-gi>
                             <n-statistic label="操作">
-                                <n-flex align="stretch" justify="start">
+                                <n-flex>
                                     <n-popselect :options="specialCharOption" @update:value="copyChar">
                                         <n-button>
                                             <n-flex>
                                                 <n-icon>
                                                     <ContentCopyRound/>
                                                 </n-icon>
-                                                <n-text>常用字符</n-text>
                                             </n-flex>
                                         </n-button>
                                     </n-popselect>
