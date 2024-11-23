@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     base: "/SekaiTextWeb/",
     build: {
-        outDir: "docs",
+        outDir: "dist",
         rollupOptions: {
             output: {
                 manualChunks(id) {
