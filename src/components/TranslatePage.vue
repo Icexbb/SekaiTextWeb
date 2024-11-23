@@ -158,6 +158,7 @@ const showSaveLog = ref(true)
 const saveToBrowser = (showLog = true) => {
     localStorage.setItem('translate', JSON.stringify(currentScript))
     localStorage.setItem('sourceFile', currentScriptName.value)
+    localStorage.setItem('sourceId', currentScriptId.value)
     if (showLog && showSaveLog.value) {
         message.success('保存成功')
         showSaveLog.value = false
@@ -169,6 +170,7 @@ const clearData = () => {
     while (currentScript.length > 0) currentScript.pop()
     while (tempLoadedTranslation.length > 0) tempLoadedTranslation.pop()
     currentScriptName.value = ""
+    currentScriptId.value = ""
     saveToBrowser(false)
     message.success('清除完成')
 }
@@ -183,11 +185,13 @@ const downloadFile = () => {
     URL.revokeObjectURL(url)
 }
 const loadFromBrowser = () => {
-    const translateData = localStorage.getItem('translate')
-    const sourceFile = localStorage.getItem('sourceFile')
+    const translateData = localStorage.getItem('translate') ?? "[]"
+    const sourceFile = localStorage.getItem('sourceFile') ?? ""
+    const sourceId = localStorage.getItem('sourceId') ?? ""
     if (translateData && sourceFile) {
         currentScript.push(...JSON.parse(translateData))
         currentScriptName.value = sourceFile
+        currentScriptId.value = sourceId
         message.success('已加载缓存数据')
     }
     saveToBrowser()
