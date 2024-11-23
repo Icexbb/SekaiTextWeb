@@ -287,13 +287,13 @@ const copyChar = (value: string) => {
             </n-layout-sider>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
-                    <n-grid :cols="6">
-                        <n-gi span="3">
+                    <n-grid :cols="7">
+                        <n-gi span="4">
                             <n-statistic label="剧本文件">
                                 <n-text>{{ currentScriptId.length == 0 ? "未选择" : currentScriptId }}</n-text>
                             </n-statistic>
                         </n-gi>
-                        <n-gi offset="1">
+                        <n-gi span="2">
                             <n-statistic label="剧本长度" :value="currentScript.length"/>
                         </n-gi>
                         <n-gi>
