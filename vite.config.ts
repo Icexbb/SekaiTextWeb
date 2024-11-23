@@ -11,8 +11,9 @@ export default defineConfig({
         AutoImport({imports: ['vue', {'naive-ui': ['useDialog', 'useMessage', 'useNotification', 'useLoadingBar']}]}),
         Components({resolvers: [NaiveUiResolver()]})
     ],
-    base: "/",
+    base: "/SekaiTextWeb/",
     build: {
+        outDir: "docs",
         rollupOptions: {
             output: {
                 manualChunks(id) {
