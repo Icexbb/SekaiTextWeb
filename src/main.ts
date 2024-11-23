@@ -1,10 +1,12 @@
 import {createApp} from 'vue'
 import './style.css'
+// @ts-ignore
 import App from './App.vue'
-import naive from 'naive-ui'
 import router from './router'
-import {createPinia} from 'pinia'
 
-createApp(App).use(router).use(naive).use(createPinia()).mount('#app').$nextTick(() => {
-    postMessage({payload: 'removeLoading'}, '*')
-}).then(() => null);
+const app = createApp(App)
+app.use(router);
+app.mount('#app')
+    .$nextTick(() => {
+        postMessage({payload: 'removeLoading'}, '*')
+    }).then(() => null);

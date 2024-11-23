@@ -2,28 +2,51 @@
 
 import TranslateDialog from "./TranslateDialog.vue";
 import {h, onMounted, reactive, ref} from "vue";
-import {ITranslateItem} from "../models/translation.ts";
+import {IDialogItem, IEffectItem, ITranslateItem} from "../models/translation.ts";
 import TranslateEffect from "./TranslateEffect.vue";
 import {baseName, changeExt, readFileAsText} from "../utils";
 import {
+    ContentCopyRound,
     DarkModeRound,
     DownloadRound,
-    HomeRound,
     PlaylistRemoveRound,
     RefreshRound,
     SaveRound,
     UploadRound
 } from "@vicons/material"
-import {MenuOption, NIcon, NText, useMessage} from "naive-ui"
+import {MenuOption, NButton, NFlex, NIcon, NImage, NText, useMessage} from "naive-ui"
 import {buildTranslateData, isSameStructure, isValidScript, mergeComparison, mergeTranslate} from "../utils/scripts.ts";
-import router from "../router";
 import {buildTranslatedData, exportTranslateData} from "../utils/translate.ts";
 import TranslateUpload from "./TranslateUpload.vue";
 import {UploadOption} from "../models/constants.ts";
 import {updateEventData} from "../utils/flashback.ts";
 import {definedEvent, emitter} from "../event/emitter.ts";
+import {IScript} from "../models/scripts.ts";
 
-const updateItem = (index: number, updatedItem: ITranslateItem) => currentScript[index] = updatedItem;
+const updateItem = (index: number, updatedItem: ITranslateItem) => {
+    const updateName = (origin: string, translated: string) => {
+        for (let i = 0; i < currentScript.length; i++) {
+            if (currentScript[i].type == "dialog") {
+                const dialog = currentScript[i] as IDialogItem;
+                if (dialog.speaker.origin == origin) {
+                    dialog.speaker.translated = translated;
+                    currentScript[i] = dialog;
+                }
+            }
+        }
+    }
+
+    switch (updatedItem.type) {
+        case "dialog":
+            currentScript[index] = updatedItem;
+            updateName((updatedItem as IDialogItem).speaker.origin, (updatedItem as IDialogItem).speaker.translated)
+            break;
+        case "effect":
+            currentScript[index] = updatedItem;
+            break;
+    }
+    saveToBrowser()
+}
 const renderIcon = (icon: any, props?: any) => () => h(NIcon, props, {default: () => h(icon)});
 
 const message = useMessage()
@@ -34,27 +57,32 @@ const modalShowUpload = ref<boolean>(false)
 const modalShowLoadAs = ref<boolean>(false)
 const modalConfirmLoad = ref<boolean>(false)
 
+const currentScriptId = ref<string>("")
 const currentScriptName = ref<string>("")
 const currentScript = reactive<ITranslateItem[]>([]);
 
+const tempLoadedScriptId = ref<string>("");
 const tempLoadedScriptName = ref<string>("");
 const tempLoadedScript = reactive<ITranslateItem[]>([]);
+
 const tempLoadedTranslation = reactive<ITranslateItem[]>([]);
 
 const applyScript = () => {
     while (currentScript.length > 0) currentScript.pop()
     currentScript.push(...tempLoadedScript)
     currentScriptName.value = tempLoadedScriptName.value
+    currentScriptId.value = tempLoadedScriptId.value
 
     while (tempLoadedScript.length > 0) tempLoadedScript.pop()
 
     modalConfirmLoad.value = false
+    saveToBrowser()
 }
 const onUpload = async (options: UploadOption) => {
     modalShowUpload.value = false;
 
     const loadJson = (fileContent: string) => {
-        let jsonObject: any;
+        let jsonObject: IScript;
         try {
             jsonObject = JSON.parse(fileContent)
         } catch (e) {
@@ -63,7 +91,9 @@ const onUpload = async (options: UploadOption) => {
         }
 
         if (isValidScript(jsonObject)) {
-            tempLoadedScriptName.value = file.name
+            tempLoadedScriptName.value = baseName(file.name)
+            tempLoadedScriptId.value = jsonObject.ScenarioId.length > 0 ? jsonObject.ScenarioId : baseName(file.name)
+
             while (tempLoadedScript.length > 0) tempLoadedScript.pop()
             tempLoadedScript.push(...buildTranslateData(jsonObject))
             if (currentScriptName.value.length > 0 && currentScriptName.value != tempLoadedScriptName.value) {
@@ -71,7 +101,6 @@ const onUpload = async (options: UploadOption) => {
             } else {
                 applyScript()
             }
-
         } else {
             message.error('文件格式不支持')
         }
@@ -110,11 +139,13 @@ const loadAsTranslation = () => {
     modalShowLoadAs.value = false
     mergeTranslate(currentScript, tempLoadedTranslation)
     while (tempLoadedTranslation.length > 0) tempLoadedTranslation.pop()
+    saveToBrowser()
 }
 const loadAsComparison = () => {
     modalShowLoadAs.value = false
     mergeComparison(currentScript, tempLoadedTranslation)
     while (tempLoadedTranslation.length > 0) tempLoadedTranslation.pop()
+    saveToBrowser()
 }
 const processDragOver = (event: DragEvent) => {
     if (currentScriptName.value.length == 0) return
@@ -122,11 +153,16 @@ const processDragOver = (event: DragEvent) => {
         modalShowUpload.value = true;
     }
 }
+const showSaveLog = ref(true)
 
 const saveToBrowser = (showLog = true) => {
     localStorage.setItem('translate', JSON.stringify(currentScript))
     localStorage.setItem('sourceFile', currentScriptName.value)
-    if (showLog) message.success('保存成功')
+    if (showLog && showSaveLog.value) {
+        message.success('保存成功')
+        showSaveLog.value = false
+        setTimeout(() => showSaveLog.value = true, 1000 * 60)
+    }
 }
 
 const clearData = () => {
@@ -137,13 +173,12 @@ const clearData = () => {
     message.success('清除完成')
 }
 
-
 const downloadFile = () => {
     const blob = new Blob([exportTranslateData(currentScript)], {type: 'application/plain'})
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = changeExt(baseName(currentScriptName.value), '.txt')
+    a.download = changeExt(currentScriptName.value, '.txt')
     a.click()
     URL.revokeObjectURL(url)
 }
@@ -155,7 +190,9 @@ const loadFromBrowser = () => {
         currentScriptName.value = sourceFile
         message.success('已加载缓存数据')
     }
+    saveToBrowser()
 }
+
 const fetchEventDataNow = async () => {
     const data = await updateEventData(true)
     if (data) message.success("闪回数据已更新")
@@ -167,39 +204,60 @@ onMounted(async () => {
     if (!!sourceFile) loadFromBrowser()
 })
 
+const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [
     {
-        label: "首页", key: "Home",
-        icon: renderIcon(HomeRound, {onClick: () => router.push("Home")})
+        label: "Sekai Text",
+        key: "Home",
+        icon: () => h(NImage, {previewDisabled: true, src: icon, style: {height: "24px", width: "24px"}}),
     },
     {key: 'divider-1', type: 'divider'},
     {
-        label: "上传文件", key: "Upload",
-        icon: renderIcon(UploadRound, {onClick: () => modalShowUpload.value = true}),
+        label: () => h("a", {onClick: () => modalShowUpload.value = true}, "上传文件"),
+        key: "Upload",
+        icon: renderIcon(UploadRound),
     },
     {
-        label: "保存数据", key: "Save",
-        icon: renderIcon(SaveRound, {onClick: () => saveToBrowser()}),
+        label: () => h("a", {onClick: saveToBrowser}, "保存数据",),
+        key: "Save",
+        icon: renderIcon(SaveRound),
     },
     {
-        label: "下载文件", key: "Download",
-        icon: renderIcon(DownloadRound, {onClick: () => downloadFile()}),
+        label: () => h("a", {onClick: downloadFile}, "下载数据"),
+        key: "Download",
+        icon: renderIcon(DownloadRound),
     },
     {
-        label: "清除数据", key: "Clear",
-        icon: renderIcon(PlaylistRemoveRound, {onClick: () => clearData()}),
+        label: () => h("a", {onClick: clearData}, "清除数据"),
+        key: "Clear",
+        icon: renderIcon(PlaylistRemoveRound),
     },
     {key: 'divider-2', type: 'divider'},
     {
-        label: "刷新闪回数据", key: "Refresh", disabled: true, show: false,
-        icon: renderIcon(RefreshRound, {onClick: () => fetchEventDataNow()}),
+        label: () => h("a", {onClick: fetchEventDataNow}, "更新闪回数据"),
+        key: "Refresh", disabled: true, show: false,
+        icon: renderIcon(RefreshRound),
     },
     {
-        label: "切换主题", key: "Theme",
-        icon: renderIcon(DarkModeRound, {onClick: () => emitter.emit(definedEvent.ChangeTheme)}),
+        label: () => h("a", {onClick: () => emitter.emit(definedEvent.ChangeTheme)}, "切换主题"),
+        key: "Theme",
+        icon: renderIcon(DarkModeRound),
     },
 ]
-
+const specialCharOption = [
+    {label: '「」', value: '「」'},
+    {label: '『』', value: '『』'},
+    {label: '《》', value: '《》'},
+    {label: '“”', value: '“”'},
+    {label: '～', value: '～'},
+    {label: '♪', value: '♪'},
+    {label: '☆', value: '☆'},
+    {label: '——', value: '——'},
+]
+const copyChar = (value: string) => {
+    navigator.clipboard.writeText(value)
+    message.success(`已复制：${value}`)
+}
 </script>
 
 <template>
@@ -211,9 +269,10 @@ const menuOptions: MenuOption [] = [
                 :collapsed-width="40"
                 :width="240"
                 :collapsed="menuCollapsed"
-                :show-trigger="false"
-                @collapse="menuCollapsed = true"
-                @expand="menuCollapsed = false"
+                show-trigger="bar"
+
+                @collapse="()=>{menuCollapsed = true}"
+                @expand="()=>{menuCollapsed = false}"
             >
                 <n-menu
                     :collapsed="menuCollapsed"
@@ -222,27 +281,58 @@ const menuOptions: MenuOption [] = [
                     :options="menuOptions"
                 />
             </n-layout-sider>
-
-            <n-layout-content>
-                <n-flex align="center" justify="center"
-                        style="height: 100%;width: 100%;"
-                        v-if="currentScriptName.length==0">
-                    <TranslateUpload :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
-                </n-flex>
-
-
-                <n-flex vertical v-for="(item, index) in currentScript"
-                        :key="`${baseName(currentScriptName)}-${item.id}`">
-                    <TranslateDialog
-                        :data="item" v-if="item.type=='dialog'"
-                        @update-item="updateItem(index, $event)"
-                    />
-                    <TranslateEffect
-                        :data="item" v-if="item.type=='effect'"
-                        @update-item="updateItem(index, $event)"
-                    />
-                </n-flex>
-            </n-layout-content>
+            <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
+                <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
+                    <n-grid :cols="5">
+                        <n-gi span="3">
+                            <n-statistic label="剧本文件">
+                                <n-text>{{ currentScriptId.length == 0 ? "未选择" : currentScriptId }}</n-text>
+                            </n-statistic>
+                        </n-gi>
+                        <n-gi>
+                            <n-statistic label="剧本长度" :value="currentScript.length"/>
+                        </n-gi>
+                        <n-gi>
+                            <n-statistic label="操作">
+                                <n-flex align="stretch" justify="start">
+                                    <n-popselect :options="specialCharOption" @update:value="copyChar">
+                                        <n-button>
+                                            <n-flex>
+                                                <n-icon>
+                                                    <ContentCopyRound/>
+                                                </n-icon>
+                                                <n-text>常用字符</n-text>
+                                            </n-flex>
+                                        </n-button>
+                                    </n-popselect>
+                                </n-flex>
+                            </n-statistic>
+                        </n-gi>
+                    </n-grid>
+                </n-layout-header>
+                <n-layout-content bordered :native-scrollbar="false" style="height: calc(100vh - 90px)">
+                    <n-flex align="center" justify="center" v-if="currentScriptName.length==0"
+                            style="height: calc(100vh - 90px)">
+                        <TranslateUpload :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
+                    </n-flex>
+                    <n-scrollbar>
+                        <n-flex style="padding:20px 5px 20px 5px" vertical>
+                            <template v-for="(item, index) in currentScript"
+                                      :key="`${currentScriptName}-${item.id}`">
+                                <TranslateDialog
+                                    :data="item as IDialogItem" v-if="item.type=='dialog'"
+                                    @update-item="updateItem(index, $event)"
+                                />
+                                <TranslateEffect
+                                    :data="item as IEffectItem" v-if="item.type=='effect'"
+                                    @update-item="updateItem(index, $event)"
+                                />
+                            </template>
+                        </n-flex>
+                    </n-scrollbar>
+                </n-layout-content>
+                <n-layout-footer></n-layout-footer>
+            </n-layout>
         </n-layout>
         <n-modal v-model:show="modalShowUpload">
             <TranslateUpload :on-upload="onUpload" style="width: 80% ;height: 40vh;"/>

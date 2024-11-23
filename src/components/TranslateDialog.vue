@@ -18,15 +18,14 @@ watch(localItem, (newValue) => emit('update-item', {...newValue}), {deep: true})
 
 const getIcon = () => {
     if (!localItem.speakerId) return "";
-    return localItem.speakerId > 0 && localItem.speakerId < 31 ? `src/assets/icons/chr_${localItem.speakerId}.png` : "";
+    const url = new URL(`/src/assets/icons/chr_${localItem.speakerId}.png`, import.meta.url).href;
+    return localItem.speakerId > 0 && localItem.speakerId < 31 ? url : "";
 }
 
 const noReturn = (value: string) => !value || !value.includes('\n')
-const noMore3Lines = (value: string) => !value || value.split('\n').length <= 3
-
+const noMore3Lines = (value: string) => !value || value.split('\n').length <= localItem.content.origin.split('\n').length
 const textCount = (props: { value: string }) => {
-    const value = props.value
-    return `${value.length}(${Math.max(...value.split('\n').map((line) => line.length))})`
+    return `${props.value.length}(${Math.max(...props.value.split('\n').map((line) => line.length))})`
 }
 
 const textValidation = (value: string) => {
@@ -92,7 +91,7 @@ const checkText = (value: string) => {
                 <n-flex vertical style="{height: 50px}">
                     <n-text style="font-weight: bold;font-size: larger">{{ data.speaker.origin }}</n-text>
                     <n-flex vertical>
-                        <template v-for="(line,index) in data.content.origin.split('\n')" :key="index">
+                        <template v-for="line in data.content.origin.split('\n')">
                             <n-text style="line-height: normal">{{ line }}</n-text>
                         </template>
                     </n-flex>

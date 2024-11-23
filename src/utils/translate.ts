@@ -29,13 +29,15 @@ export function buildTranslatedData(content: string) {
 }
 
 export function exportTranslateData(data: ITranslateItem[]) {
-    let content = ''
+    let lines: string[] = []
     data.forEach(item => {
+        const c = item.content.translated.replace("\n", "\\N")
         if (item.type == 'dialog') {
-            content += `${(item as IDialogItem).speaker.translated}：${(item as IDialogItem).content.translated}\n`
+            const s = (item as IDialogItem).speaker.translated
+            lines.push(`${s}：${c}`)
         } else {
-            content += `${(item as IEffectItem).content.translated}\n`
+            lines.push(c)
         }
     })
-    return content
+    return lines.join("\n")
 }
