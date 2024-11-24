@@ -4,7 +4,8 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/',
         name: 'Home',
-        component: () => import(new URL("../components/TranslatePage.vue", import.meta.url).href)
+        // @ts-ignore
+        component: () => import("../components/TranslatePage.vue")
     },
 ]
 
