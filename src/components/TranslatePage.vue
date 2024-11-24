@@ -10,7 +10,6 @@ import {
     DarkModeRound,
     DownloadRound,
     PlaylistRemoveRound,
-    RefreshRound,
     SaveRound,
     UploadRound
 } from "@vicons/material"
