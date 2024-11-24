@@ -1,19 +1,20 @@
-interface EventRankingRewardRange {
-    id: number;
-    eventId: number;
-    fromRank: number;
-    toRank: number;
-    isToRankBorder: boolean;
-    eventRankingRewards: EventRankingReward[];
-}
-
-interface EventRankingReward {
+interface IEventRankingReward {
     id: number;
     eventRankingRewardRangeId: number;
     resourceBoxId: number;
 }
 
-export default interface Event {
+interface IEventRankingRewardRange {
+    id: number;
+    eventId: number;
+    fromRank: number;
+    toRank: number;
+    isToRankBorder: boolean;
+    eventRankingRewards: IEventRankingReward[];
+}
+
+
+export default interface IEvent {
     id: number;
     eventType: string;
     name: string;
@@ -29,5 +30,5 @@ export default interface Event {
     distributionEndAt: number;
     virtualLiveId: number;
     unit: string;
-    eventRankingRewardRanges: EventRankingRewardRange[];
+    eventRankingRewardRanges: IEventRankingRewardRange[];
 }

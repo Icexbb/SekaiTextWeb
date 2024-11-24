@@ -19,9 +19,9 @@ import {buildTranslateData, isSameStructure, isValidScript, mergeComparison, mer
 import {buildTranslatedData, exportTranslateData} from "../utils/translate.ts";
 import TranslateUpload from "./TranslateUpload.vue";
 import {UploadOption} from "../models/constants.ts";
-import {updateEventData} from "../utils/flashback.ts";
 import {definedEvent, emitter} from "../event/emitter.ts";
 import {IScript} from "../models/scripts.ts";
+import storageManager, {StorageKey} from "../storage";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
     const updateName = (origin: string, translated: string) => {
@@ -156,9 +156,9 @@ const processDragOver = (event: DragEvent) => {
 const showSaveLog = ref(true)
 
 const saveToBrowser = (showLog = true) => {
-    localStorage.setItem('translate', JSON.stringify(currentScript))
-    localStorage.setItem('sourceFile', currentScriptName.value)
-    localStorage.setItem('sourceId', currentScriptId.value)
+    storageManager.setArray(StorageKey.scriptData, currentScript)
+    storageManager.setString(StorageKey.scriptFile, currentScriptName.value)
+    storageManager.setString(StorageKey.scriptId, currentScriptId.value)
     if (showLog && showSaveLog.value) {
         message.success('保存成功')
         showSaveLog.value = false
@@ -185,11 +185,11 @@ const downloadFile = () => {
     URL.revokeObjectURL(url)
 }
 const loadFromBrowser = () => {
-    const translateData = localStorage.getItem('translate') ?? "[]"
-    const sourceFile = localStorage.getItem('sourceFile') ?? ""
-    const sourceId = localStorage.getItem('sourceId') ?? ""
+    const translateData = storageManager.getArray<ITranslateItem>(StorageKey.scriptData)// localStorage.getItem('translate') ?? "[]"
+    const sourceFile = storageManager.getString(StorageKey.scriptFile) // localStorage.getItem('sourceFile') ?? ""
+    const sourceId = storageManager.getString(StorageKey.scriptId)//localStorage.getItem('sourceId') ?? ""
     if (translateData && sourceFile) {
-        currentScript.push(...JSON.parse(translateData))
+        currentScript.push(...translateData)
         currentScriptName.value = sourceFile
         currentScriptId.value = sourceId
         message.success('已加载缓存数据')
@@ -197,11 +197,11 @@ const loadFromBrowser = () => {
     saveToBrowser()
 }
 
-const fetchEventDataNow = async () => {
-    const data = await updateEventData(true)
-    if (data) message.success("闪回数据已更新")
-    else message.error("闪回数据更新失败")
-}
+// const fetchEventDataNow = async () => {
+//     const data = await updateEventData(true)
+//     if (data) message.success("闪回数据已更新")
+//     else message.error("闪回数据更新失败")
+// }
 
 onMounted(async () => {
     const sourceFile = localStorage.getItem('sourceFile')
@@ -237,11 +237,11 @@ const menuOptions: MenuOption [] = [
         icon: renderIcon(PlaylistRemoveRound),
     },
     {key: 'divider-2', type: 'divider'},
-    {
-        label: () => h("a", {onClick: fetchEventDataNow}, "更新闪回数据"),
-        key: "Refresh", disabled: true, show: false,
-        icon: renderIcon(RefreshRound),
-    },
+    // {
+    //     label: () => h("a", {onClick: fetchEventDataNow}, "更新闪回数据"),
+    //     key: "Refresh", disabled: true, show: false,
+    //     icon: renderIcon(RefreshRound),
+    // },
     {
         label: () => h("a", {onClick: () => emitter.emit(definedEvent.ChangeTheme)}, "切换主题"),
         key: "Theme",

@@ -31,3 +31,10 @@ export function changeExt(path: string, ext: string) {
     return path.replace(/\.\w+$/, ext)
 }
 
+export function getLast<T>(input: T[] | string): T | string | undefined {
+    if (Array.isArray(input)) {
+        return input.length > 0 ? input[input.length - 1] : undefined;
+    }else {
+        return input.length > 0 ? input.charAt(input.length - 1) : undefined;
+    }
+}

@@ -1,7 +1,11 @@
-import { createRouter, createWebHashHistory, RouterOptions, Router, RouteRecordRaw } from 'vue-router'
+import {createRouter, createWebHashHistory, Router, RouteRecordRaw, RouterOptions} from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
-    { path: '/', name: 'Home', component: () => import("../components/TranslatePage.vue") },
+    {
+        path: '/',
+        name: 'Home',
+        component: () => import(new URL("../components/TranslatePage.vue", import.meta.url).href)
+    },
 ]
 
 // RouterOptions是路由选项类型

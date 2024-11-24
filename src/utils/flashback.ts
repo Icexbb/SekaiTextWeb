@@ -1,39 +1,78 @@
-import Event from "../models/event.ts";
-import jsonp from "jsonp"
+import {getLast} from "./index.ts";
 
-const eventDataUrl = "https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/events.json"
-
-export async function fetchEventData() {
-    return new Promise<Event | null>(resolve => {
-        jsonp(eventDataUrl, {}, (err, data) => {
-            if (err) {
-                resolve(null)
-            } else {
-                resolve(JSON.parse(data) as Event)
-            }
-        })
-    })
+interface IClue {
+    id: number
+    title: string
+    chapters: any[]
+    inferredVoiceIDs: { prefix: string, chOffset: number }
 }
 
-export async function updateEventData(fetchNow = false) {
-    // const data = await fetchEventData()
-    if (Date.now() - parseInt(localStorage.getItem("eventDataUpdateTime") ?? "0") > 1000 * 60 * 60 * 24 || fetchNow) {
-        const data = await (await fetch(eventDataUrl)).json() as Event[]
-        if (data) {
-            localStorage.setItem("eventDataUpdateTime", Date.now().toString())
-            localStorage.setItem("eventData", JSON.stringify(data))
+class FlashBackAnalyzer {
+    flashBackPattern = /voice_(.+)_\d+[a-z]?_\d+(?:_?.*)?$/
+    areaTalkPattern = /areatalk_(ev|wl)_(.+)_\d+$/
+    mainStoryEpPattern = /(.*?)(\d+)$/
+    cardRarityEpPattern = /(\d+)(.*?)$/
+
+    clueDict: Map<string, IClue> = new Map<string, IClue>()
+    mainStory = {}
+    events = {}
+    noClue: IClue = {
+        id: -1,
+        title: "未知剧情",
+        chapters: [],
+        inferredVoiceIDs: {prefix: "BAD_STR", chOffset: 0}
+    }
+
+    voice_ms_to_mainStory_id = {
+        'band': 'light_sound',
+        'idol': 'idol',
+        'street': 'street',
+        'wonder': 'theme_park',
+        'night': 'school_refusal',
+        'piapro': 'piapro'
+    }
+
+
+    getClue(voiceId: string): string[] {
+        let hints: string[] = []
+        if (voiceId.includes('partvoice')) return hints;
+
+        const clueMatch = voiceId.match(this.flashBackPattern)
+        if (!clueMatch) return hints
+        const clue = clueMatch.groups ? clueMatch.groups[1] : null
+        if (!clue) return hints
+        const clueWord = clue.split("_")
+        if (clueWord[0] == "sc") clueWord.shift()
+        return clueWord
+    }
+
+    checkFlashBack(voiceId: string) {
+        const clue = this.getClue(voiceId)
+        if (!clue || clue.length == 0) return;
+        let type = clue.shift()!
+
+        if (type == "ev" && ['a', 'b'].includes(getLast(getLast(clue) ?? "") ?? "")) type = "card"
+        switch (type) {
+            case "ev":
+                let episode = parseInt(getLast(clue) ?? '-1')
+                // let eventIdx =  parseInt(clue[0] ?? '-1')
+                if (isNaN(episode)) episode = -1
+                // dbManager.event.filter()
+
+
+                break
+            case "ms":
+            case "op":
+            case "unit":
+                break
+            case "card":
+                break
+            default:
+                break
         }
-        return data
-    } else {
-        return JSON.parse(localStorage.getItem("eventData") ?? "[]") as Event[]
+
     }
 }
 
-export function getEventData() {
-    return JSON.parse(localStorage.getItem("eventData") ?? "[]") as Event[]
-}
-
-export function checkFlashBack() {
-    const events = getEventData()
-    if (!events) return false
-}
+const flashBackAnalyzer = new FlashBackAnalyzer()
+export default flashBackAnalyzer;

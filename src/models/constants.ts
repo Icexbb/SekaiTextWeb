@@ -51,3 +51,12 @@ export interface UploadOption {
     fileList: Array<UploadFileInfo>,
     event?: Event
 }
+
+export const voice_ms_to_mainStory_id = {
+    'band': 'light_sound',
+    'idol': 'idol',
+    'street': 'street',
+    'wonder': 'theme_park',
+    'night': 'school_refusal',
+    'piapro': 'piapro'
+}
