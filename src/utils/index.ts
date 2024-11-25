@@ -1,16 +1,5 @@
-export async function readTextFile(option: {
-    description: string,
-    accept: object,
-    excludeAcceptAllOption: boolean,
-    multiple: boolean
-}) {
-    // @ts-ignore
-    let [fileHandle] = await window.showOpenFilePicker({
-        types: [option],
-    });
-    const file: File = await fileHandle.getFile();
-    return await readFileAsText(file);
-}
+import {h} from "vue";
+import {NIcon} from "naive-ui";
 
 export async function readFileAsText(file: File) {
     return new Promise<string>(resolve => {
@@ -38,3 +27,5 @@ export function getLast<T>(input: T[] | string): T | string | undefined {
         return input.length > 0 ? input.charAt(input.length - 1) : undefined;
     }
 }
+
+export const renderIcon = (icon: any, props?: any) => () => h(NIcon, props, {default: () => h(icon)});

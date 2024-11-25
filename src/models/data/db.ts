@@ -1,6 +1,6 @@
-import storageManager, {StorageKey} from "../storage";
-import IEvent from "../models/event.ts";
-import IUnitStory from "../models/unitStory.ts";
+import storageManager, {StorageKey} from "../../storage";
+import IEvent from "./event.ts";
+import IUnitStory from "./unitStory.ts";
 
 class DbManager {
     dataRoot = "https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/"

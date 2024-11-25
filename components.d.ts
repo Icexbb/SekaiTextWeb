@@ -7,6 +7,12 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ComfirmOverride: typeof import('./src/components/TranslateScript/ComfirmOverride.vue')['default']
+    ConfirmOverride: typeof import('./src/components/General/ConfirmOverride.vue')['default']
+    Dialog: typeof import('./src/components/TranslateScript/Dialog.vue')['default']
+    Effect: typeof import('./src/components/TranslateScript/Effect.vue')['default']
+    Line: typeof import('./src/components/Home/Line.vue')['default']
+    NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NFlex: typeof import('naive-ui')['NFlex']
@@ -28,13 +34,16 @@ declare module 'vue' {
     NPopselect: typeof import('naive-ui')['NPopselect']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
     NStatistic: typeof import('naive-ui')['NStatistic']
+    NText: typeof import('naive-ui')['NText']
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
+    Page: typeof import('./src/components/Home/Page.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TranslateDialog: typeof import('./src/components/TranslateDialog.vue')['default']
-    TranslateEffect: typeof import('./src/components/TranslateEffect.vue')['default']
-    TranslatePage: typeof import('./src/components/TranslatePage.vue')['default']
-    TranslateUpload: typeof import('./src/components/TranslateUpload.vue')['default']
+    TranslateDialog: typeof import('./src/components/Translate/TranslateDialog.vue')['default']
+    TranslateEffect: typeof import('./src/components/Translate/TranslateEffect.vue')['default']
+    TranslatePage: typeof import('./src/components/Translate/TranslatePage.vue')['default']
+    TranslateUpload: typeof import('./src/components/Translate/TranslateUpload.vue')['default']
+    Upload: typeof import('./src/components/General/Upload.vue')['default']
   }
 }

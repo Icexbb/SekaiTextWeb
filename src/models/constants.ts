@@ -60,3 +60,13 @@ export const voice_ms_to_mainStory_id = {
     'night': 'school_refusal',
     'piapro': 'piapro'
 }
+export const specialCharOption = [
+    {label: '「」', value: '「」'},
+    {label: '『』', value: '『』'},
+    {label: '《》', value: '《》'},
+    {label: '“”', value: '“”'},
+    {label: '～', value: '～'},
+    {label: '♪', value: '♪'},
+    {label: '☆', value: '☆'},
+    {label: '——', value: '——'},
+]

@@ -1,6 +1,6 @@
-import {C2dIdToCid} from "../models/constants.ts";
-import {IScript, ISnippet, ITalkData} from "../models/scripts.ts";
-import {IDialogItem, ITranslateItem} from "../models/translation.ts";
+import {C2dIdToCid} from "../constants.ts";
+import {IScript, ISnippet, ITalkData} from "./model.ts";
+import {IDialogItem, ITranslateItem} from "./translation.ts";
 
 export function getCharacterId(talkData: ITalkData) {
     if (talkData.Voices.length != 1 && talkData.TalkCharacters.length != 1) return 0;

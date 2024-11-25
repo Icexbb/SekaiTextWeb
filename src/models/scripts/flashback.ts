@@ -1,4 +1,4 @@
-import {getLast} from "./index.ts";
+import {getLast} from "../../utils";
 
 interface IClue {
     id: number

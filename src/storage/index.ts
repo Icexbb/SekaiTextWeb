@@ -5,6 +5,9 @@ export enum StorageKey {
     scriptFile = "scriptFile",
     scriptId = "scriptId",
 
+    textData = "textData",
+    textFile = "textFile",
+    
     sekaiDataUpdateTime = "sekaiDataUpdateTime",
     
     sekaiDataEvent = "sekaiDataEvent",

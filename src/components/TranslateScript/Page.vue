@@ -1,10 +1,16 @@
 <script setup lang="ts">
 
-import TranslateDialog from "./TranslateDialog.vue";
+import TranslateDialog from "./Dialog.vue";
 import {h, onMounted, reactive, ref} from "vue";
-import {IDialogItem, IEffectItem, ITranslateItem} from "../models/translation.ts";
-import TranslateEffect from "./TranslateEffect.vue";
-import {baseName, changeExt, readFileAsText} from "../utils";
+import {
+    buildTranslatedData,
+    exportTranslateData,
+    IDialogItem,
+    IEffectItem,
+    ITranslateItem
+} from "../../models/scripts/translation.ts";
+import TranslateEffect from "./Effect.vue";
+import {baseName, changeExt, readFileAsText, renderIcon} from "../../utils";
 import {
     ContentCopyRound,
     DarkModeRound,
@@ -14,13 +20,20 @@ import {
     UploadRound
 } from "@vicons/material"
 import {MenuOption, NButton, NFlex, NIcon, NImage, NText, useMessage} from "naive-ui"
-import {buildTranslateData, isSameStructure, isValidScript, mergeComparison, mergeTranslate} from "../utils/scripts.ts";
-import {buildTranslatedData, exportTranslateData} from "../utils/translate.ts";
-import TranslateUpload from "./TranslateUpload.vue";
-import {UploadOption} from "../models/constants.ts";
-import {definedEvent, emitter} from "../event/emitter.ts";
-import {IScript} from "../models/scripts.ts";
-import storageManager, {StorageKey} from "../storage";
+import {
+    buildTranslateData,
+    isSameStructure,
+    isValidScript,
+    mergeComparison,
+    mergeTranslate
+} from "../../models/scripts/scripts.ts";
+import UploadCard from "../General/Upload.vue";
+import {specialCharOption, UploadOption} from "../../models/constants.ts";
+import {definedEvent, emitter} from "../../event/emitter.ts";
+import {IScript} from "../../models/scripts/model.ts";
+import storageManager, {StorageKey} from "../../storage";
+import router, {routeName} from "../../router";
+import ComfirmOverride from "../General/ConfirmOverride.vue";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
     const updateName = (origin: string, translated: string) => {
@@ -46,7 +59,6 @@ const updateItem = (index: number, updatedItem: ITranslateItem) => {
     }
     saveToBrowser()
 }
-const renderIcon = (icon: any, props?: any) => () => h(NIcon, props, {default: () => h(icon)});
 
 const message = useMessage()
 
@@ -158,7 +170,7 @@ const saveToBrowser = (showLog = true) => {
     storageManager.setArray(StorageKey.scriptData, currentScript)
     storageManager.setString(StorageKey.scriptFile, currentScriptName.value)
     storageManager.setString(StorageKey.scriptId, currentScriptId.value)
-    if (showLog && showSaveLog.value) {
+    if (showLog && showSaveLog.value && currentScriptId.value.length > 0) {
         message.success('保存成功')
         showSaveLog.value = false
         setTimeout(() => showSaveLog.value = true, 1000 * 60)
@@ -210,9 +222,14 @@ onMounted(async () => {
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [
     {
-        label: "Sekai Text",
+        label: "首页",
         key: "Home",
-        icon: () => h(NImage, {previewDisabled: true, src: icon, style: {height: "24px", width: "24px"}}),
+        icon: () => h(NImage, {
+            previewDisabled: true,
+            src: icon,
+            style: {height: "24px", width: "24px"},
+            onClick: () => router.push(routeName.Home.path)
+        }),
     },
     {key: 'divider-1', type: 'divider'},
     {
@@ -221,7 +238,7 @@ const menuOptions: MenuOption [] = [
         icon: renderIcon(UploadRound),
     },
     {
-        label: () => h("a", {onClick: saveToBrowser}, "保存数据",),
+        label: () => h("a", {onClick: () => saveToBrowser(true)}, "保存数据",),
         key: "Save",
         icon: renderIcon(SaveRound),
     },
@@ -246,16 +263,6 @@ const menuOptions: MenuOption [] = [
         key: "Theme",
         icon: renderIcon(DarkModeRound),
     },
-]
-const specialCharOption = [
-    {label: '「」', value: '「」'},
-    {label: '『』', value: '『』'},
-    {label: '《》', value: '《》'},
-    {label: '“”', value: '“”'},
-    {label: '～', value: '～'},
-    {label: '♪', value: '♪'},
-    {label: '☆', value: '☆'},
-    {label: '——', value: '——'},
 ]
 const copyChar = (value: string) => {
     navigator.clipboard.writeText(value)
@@ -286,8 +293,8 @@ const copyChar = (value: string) => {
             </n-layout-sider>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
-                    <n-grid :cols="7">
-                        <n-gi span="4">
+                    <n-grid :cols="12">
+                        <n-gi span="8">
                             <n-statistic label="剧本文件">
                                 <n-text>{{ currentScriptId.length == 0 ? "未选择" : currentScriptId }}</n-text>
                             </n-statistic>
@@ -295,7 +302,7 @@ const copyChar = (value: string) => {
                         <n-gi span="2">
                             <n-statistic label="剧本长度" :value="currentScript.length"/>
                         </n-gi>
-                        <n-gi>
+                        <n-gi span="2">
                             <n-statistic label="操作">
                                 <n-flex>
                                     <n-popselect :options="specialCharOption" @update:value="copyChar">
@@ -315,7 +322,7 @@ const copyChar = (value: string) => {
                 <n-layout-content bordered :native-scrollbar="false" style="height: calc(100vh - 90px)">
                     <n-flex align="center" justify="center" v-if="currentScriptName.length==0"
                             style="height: calc(100vh - 90px)">
-                        <TranslateUpload :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
+                        <UploadCard :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
                     </n-flex>
                     <n-scrollbar>
                         <n-flex style="padding:20px 5px 20px 5px" vertical>
@@ -333,11 +340,10 @@ const copyChar = (value: string) => {
                         </n-flex>
                     </n-scrollbar>
                 </n-layout-content>
-                <n-layout-footer></n-layout-footer>
             </n-layout>
         </n-layout>
         <n-modal v-model:show="modalShowUpload">
-            <TranslateUpload :on-upload="onUpload" style="width: 80% ;height: 40vh;"/>
+            <UploadCard :on-upload="onUpload" style="width: 80% ;height: 40vh;"/>
         </n-modal>
         <n-modal v-model:show="modalShowLoadAs">
             <n-card style="height: 60%;width: 80%">
@@ -355,19 +361,7 @@ const copyChar = (value: string) => {
             </n-card>
         </n-modal>
         <n-modal v-model:show="modalConfirmLoad">
-            <n-card style="height: 60%;width: 80%">
-                <n-flex vertical>
-                    <n-text>确定要覆盖加载剧本文件吗：</n-text>
-                    <n-flex justify="space-around">
-                        <n-button type="error" @click="applyScript">
-                            <n-text>是</n-text>
-                        </n-button>
-                        <n-button @click="()=>modalConfirmLoad=false">
-                            <n-text>否</n-text>
-                        </n-button>
-                    </n-flex>
-                </n-flex>
-            </n-card>
+            <ComfirmOverride :on-confirm="applyScript" :on-cancel="()=>modalConfirmLoad=false"/>
         </n-modal>
     </div>
 </template>

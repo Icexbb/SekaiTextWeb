@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {reactive, ref, toRefs, watch} from 'vue';
-import {IDialogItem} from "../models/translation.ts";
+import {IDialogItem} from "../../models/scripts/translation.ts";
 import {NFlex, NText} from "naive-ui"
 
 const {data, translateName = true} = defineProps<{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {NIcon, NText} from "naive-ui"
-import {UploadOption} from "../models/constants.ts";
+import {UploadOption} from "../../models/constants.ts";
 import {UploadRound} from "@vicons/material"
 
 const {onUpload} = defineProps<{
