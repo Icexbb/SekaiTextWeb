@@ -1,28 +1,80 @@
 import {createRouter, createWebHashHistory, Router, RouteRecordRaw, RouterOptions} from 'vue-router'
+import {
+    FileDownloadRound,
+    HomeRound,
+    QueueMusicRound,
+    SubscriptionsRound,
+    SubtitlesRound,
+    TextSnippetRound
+} from "@vicons/material";
 
-export const routeName = {
-    Home: {name: "Home", path: "/"},
-    TranslateScript: {name: "TranslateScript", path: "/translate/script"},
-    TranslateText: {name: "TranslateText", path: "/translate/text"}
+interface IRoutePath {
+    key: string
+    name: string
+    path: string
+    icon: any
+    disabled?: boolean
+    hidden?: boolean
 }
-const routes: RouteRecordRaw[] = [
-    {
-        path: routeName.Home.path,
-        name: routeName.Home.name,
-        component: () => import("../components/Home/Page.vue")
-    },
 
+export const routeName: IRoutePath[] = [
     {
-        path: routeName.TranslateScript.path,
-        name: routeName.TranslateScript.name,
-        component: () => import("../components/TranslateScript/Page.vue")
+        key: "Home",
+        name: "首页",
+        path: "/",
+        icon: HomeRound,
+        hidden: true
     },
     {
-        path: routeName.TranslateText.path,
-        name: routeName.TranslateText.name,
-        component: () => import("../components/TranslateText/Page.vue")
-    }
+        key: "TranslateScript",
+        name: "剧本翻译",
+        path: "/translate/script",
+        icon: SubscriptionsRound
+    },
+    {
+        key: "TranslateText",
+        name: "文本翻译",
+        path: "/translate/text",
+        icon: TextSnippetRound
+    },
+    {
+        key: "DownloadScript",
+        name: "剧本下载",
+        path: "/download/script",
+        icon: FileDownloadRound,
+        disabled: true
+    },
+    {
+        key: "TimelineLrc",
+        name: "Lrc歌词制作",
+        path: "/timeline/lrc",
+        icon: QueueMusicRound,
+        disabled: true
+    },
+    {
+        key: "TimelineSrt",
+        name: "Srt字幕制作",
+        path: "/timeline/srt",
+        icon: SubtitlesRound,
+        disabled: true
+    },
 ]
+
+export function getRoute(name: string) {
+    return routeName.find(item => item.key === name)
+}
+
+const routes: RouteRecordRaw[] = routeName.map((item) =>
+    ({
+        path: item.path,
+        name: item.key,
+        component: () => import((`../components/${item.key}/Page.vue`))
+    })
+);
+routes.push({
+    path: '/:catchAll(.*)',
+    redirect: '/'
+})
 
 // RouterOptions是路由选项类型
 const options: RouterOptions = {
@@ -32,6 +84,5 @@ const options: RouterOptions = {
 
 // Router是路由对象类型
 const router: Router = createRouter(options)
-
 export default router
 

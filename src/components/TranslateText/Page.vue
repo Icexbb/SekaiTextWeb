@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import {MenuOption, NButton, NFlex, NIcon, NImage, NText, useMessage} from "naive-ui";
-import {h, reactive, ref} from "vue";
+import {h, onMounted, onUnmounted, reactive, ref} from "vue";
 import UploadCard from "../General/Upload.vue";
 import {specialCharOption, UploadOption} from "../../models/constants.ts";
 import {baseName, changeExt, readFileAsText, renderIcon} from "../../utils";
@@ -13,7 +13,7 @@ import {
 } from "../../models/text/translation.ts";
 import storageManager, {StorageKey} from "../../storage";
 import {ITranslateItem} from "../../models/scripts/translation.ts";
-import router, {routeName} from "../../router";
+import router, {getRoute} from "../../router";
 import {
     ContentCopyRound,
     DarkModeRound,
@@ -55,13 +55,15 @@ const applyScript = () => {
     saveToBrowser()
 }
 
-const saveToBrowser = (showLog = true) => {
+const saveToBrowser = (showLog = true, forceShowLog = true) => {
     storageManager.setArray(StorageKey.textData, currentScript)
     storageManager.setString(StorageKey.textFile, currentScriptName.value)
-    if (showLog && showSaveLog.value && currentScriptName.value.length > 0) {
-        message.success('保存成功')
-        showSaveLog.value = false
-        setTimeout(() => showSaveLog.value = true, 1000 * 60)
+    if (showLog && showSaveLog.value && currentScriptName.value.length > 0 || forceShowLog) {
+        {
+            message.success('保存成功')
+            showSaveLog.value = false
+            setTimeout(() => showSaveLog.value = true, 1000 * 60)
+        }
     }
 }
 
@@ -120,7 +122,7 @@ const menuOptions: MenuOption [] = [
             previewDisabled: true,
             src: icon,
             style: {height: "24px", width: "24px"},
-            onClick: () => router.push(routeName.Home.path)
+            onClick: () => router.push(getRoute("Home").path)
         }),
     },
     {key: 'divider-1', type: 'divider'},
@@ -130,7 +132,7 @@ const menuOptions: MenuOption [] = [
         icon: renderIcon(UploadRound),
     },
     {
-        label: () => h("a", {onClick: () => saveToBrowser(true)}, "保存数据",),
+        label: () => h("a", {onClick: () => saveToBrowser(true, true)}, "保存数据",),
         key: "Save",
         icon: renderIcon(SaveRound),
     },
@@ -160,6 +162,19 @@ const copyChar = (value: string) => {
     navigator.clipboard.writeText(value)
     message.success(`已复制：${value}`)
 }
+
+onMounted(async () => {
+    document.onkeydown = function (event) {
+        let key = event.key.toLowerCase();
+        if (key === 's' && event.ctrlKey) {
+            event.preventDefault(); //关闭浏览器快捷键
+            saveToBrowser(true, true)
+        }
+    }
+})
+onUnmounted(() => {
+    document.onkeydown = null;
+})
 </script>
 
 <template>

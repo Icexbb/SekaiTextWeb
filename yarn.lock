@@ -324,6 +324,11 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.13.tgz#786e2d67cfd95e32862143abe7463a7f90c300eb"
   integrity sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==
 
+"@vicons/fa@^0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@vicons/fa/-/fa-0.12.0.tgz#a5f92db45990f8a47b5eeedcdb9b673f0dababc8"
+  integrity sha512-g2PIeJLsTHUjt6bK63LxqC0uYQB7iu+xViJOxvp1s8b9/akpXVPVWjDTTsP980/0KYyMMe4U7F/aUo7wY+MsXA==
+
 "@vicons/fluent@^0.12.0":
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/@vicons/fluent/-/fluent-0.12.0.tgz#7e9a39190114f7cb682a71dd166e7efec35e5e9c"

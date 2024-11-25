@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import TranslateDialog from "./Dialog.vue";
-import {h, onMounted, reactive, ref} from "vue";
+import {h, onMounted, onUnmounted, reactive, ref} from "vue";
 import {
     buildTranslatedData,
     exportTranslateData,
@@ -32,8 +32,8 @@ import {specialCharOption, UploadOption} from "../../models/constants.ts";
 import {definedEvent, emitter} from "../../event/emitter.ts";
 import {IScript} from "../../models/scripts/model.ts";
 import storageManager, {StorageKey} from "../../storage";
-import router, {routeName} from "../../router";
-import ComfirmOverride from "../General/ConfirmOverride.vue";
+import router, {getRoute} from "../../router";
+import ConfirmOverride from "../General/ConfirmOverride.vue";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
     const updateName = (origin: string, translated: string) => {
@@ -166,11 +166,11 @@ const processDragOver = (event: DragEvent) => {
 }
 const showSaveLog = ref(true)
 
-const saveToBrowser = (showLog = true) => {
+const saveToBrowser = (showLog = true, forceShowLog = false) => {
     storageManager.setArray(StorageKey.scriptData, currentScript)
     storageManager.setString(StorageKey.scriptFile, currentScriptName.value)
     storageManager.setString(StorageKey.scriptId, currentScriptId.value)
-    if (showLog && showSaveLog.value && currentScriptId.value.length > 0) {
+    if (showLog && showSaveLog.value && currentScriptId.value.length > 0 || forceShowLog) {
         message.success('保存成功')
         showSaveLog.value = false
         setTimeout(() => showSaveLog.value = true, 1000 * 60)
@@ -214,10 +214,6 @@ const loadFromBrowser = () => {
 //     else message.error("闪回数据更新失败")
 // }
 
-onMounted(async () => {
-    const sourceFile = localStorage.getItem('sourceFile')
-    if (!!sourceFile) loadFromBrowser()
-})
 
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [
@@ -228,7 +224,7 @@ const menuOptions: MenuOption [] = [
             previewDisabled: true,
             src: icon,
             style: {height: "24px", width: "24px"},
-            onClick: () => router.push(routeName.Home.path)
+            onClick: () => router.push(getRoute("Home").path)
         }),
     },
     {key: 'divider-1', type: 'divider'},
@@ -238,7 +234,7 @@ const menuOptions: MenuOption [] = [
         icon: renderIcon(UploadRound),
     },
     {
-        label: () => h("a", {onClick: () => saveToBrowser(true)}, "保存数据",),
+        label: () => h("a", {onClick: () => saveToBrowser(true, true)}, "保存数据",),
         key: "Save",
         icon: renderIcon(SaveRound),
     },
@@ -268,6 +264,23 @@ const copyChar = (value: string) => {
     navigator.clipboard.writeText(value)
     message.success(`已复制：${value}`)
 }
+
+onMounted(async () => {
+    const sourceFile = localStorage.getItem('sourceFile')
+    if (!!sourceFile) loadFromBrowser()
+
+    document.onkeydown = function (event) {
+        let key = event.key.toLowerCase();
+        if (key === 's' && event.ctrlKey) {
+            event.preventDefault(); //关闭浏览器快捷键
+            saveToBrowser(true, true)
+        }
+    }
+});
+onUnmounted(() => {
+    document.onkeydown = null;
+});
+
 </script>
 
 <template>
@@ -361,7 +374,7 @@ const copyChar = (value: string) => {
             </n-card>
         </n-modal>
         <n-modal v-model:show="modalConfirmLoad">
-            <ComfirmOverride :on-confirm="applyScript" :on-cancel="()=>modalConfirmLoad=false"/>
+            <ConfirmOverride :on-confirm="applyScript" :on-cancel="()=>modalConfirmLoad=false"/>
         </n-modal>
     </div>
 </template>
