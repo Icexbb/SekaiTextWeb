@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const {onConfirm, onCancel} = defineProps<{
     onConfirm: () => void,
     onCancel: () => void

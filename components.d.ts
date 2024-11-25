@@ -7,11 +7,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ComfirmOverride: typeof import('./src/components/TranslateScript/ComfirmOverride.vue')['default']
-    ConfirmOverride: typeof import('./src/components/General/ConfirmOverride.vue')['default']
-    Dialog: typeof import('./src/components/TranslateScript/Dialog.vue')['default']
-    Effect: typeof import('./src/components/TranslateScript/Effect.vue')['default']
-    Line: typeof import('./src/components/Home/Line.vue')['default']
+    GeneralConfirmOverride: typeof import('./src/components/General/ConfirmOverride.vue')['default']
+    GeneralUpload: typeof import('./src/components/General/Upload.vue')['default']
+    HomeLine: typeof import('./src/components/Home/Line.vue')['default']
+    HomePage: typeof import('./src/components/Home/Page.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
@@ -38,13 +37,11 @@ declare module 'vue' {
     NText: typeof import('naive-ui')['NText']
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
-    Page: typeof import('./src/components/Home/Page.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TranslateDialog: typeof import('./src/components/Translate/TranslateDialog.vue')['default']
-    TranslateEffect: typeof import('./src/components/Translate/TranslateEffect.vue')['default']
-    TranslatePage: typeof import('./src/components/Translate/TranslatePage.vue')['default']
-    TranslateUpload: typeof import('./src/components/Translate/TranslateUpload.vue')['default']
-    Upload: typeof import('./src/components/General/Upload.vue')['default']
+    TranslateScriptDialog: typeof import('./src/components/TranslateScript/Dialog.vue')['default']
+    TranslateScriptEffect: typeof import('./src/components/TranslateScript/Effect.vue')['default']
+    TranslateScriptPage: typeof import('./src/components/TranslateScript/Page.vue')['default']
+    TranslateTextPage: typeof import('./src/components/TranslateText/Page.vue')['default']
   }
 }

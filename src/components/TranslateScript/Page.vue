@@ -32,7 +32,7 @@ import {specialCharOption, UploadOption} from "../../models/constants.ts";
 import {definedEvent, emitter} from "../../event/emitter.ts";
 import {IScript} from "../../models/scripts/model.ts";
 import storageManager, {StorageKey} from "../../storage";
-import router, {getRoute} from "../../router";
+import router, {getRoute, homeRoute} from "../../router";
 import ConfirmOverride from "../General/ConfirmOverride.vue";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
@@ -224,7 +224,7 @@ const menuOptions: MenuOption [] = [
             previewDisabled: true,
             src: icon,
             style: {height: "24px", width: "24px"},
-            onClick: () => router.push(getRoute("Home").path)
+            onClick: () => router.push(homeRoute.path)
         }),
     },
     {key: 'divider-1', type: 'divider'},

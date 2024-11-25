@@ -9,7 +9,7 @@ export default defineConfig({
     plugins: [
         vue(),
         AutoImport({imports: ['vue', {'naive-ui': ['useDialog', 'useMessage', 'useNotification', 'useLoadingBar']}]}),
-        Components({resolvers: [NaiveUiResolver()]})
+        Components({resolvers: [NaiveUiResolver()], directoryAsNamespace: true})
     ],
     base: "/SekaiTextWeb/",
     build: {

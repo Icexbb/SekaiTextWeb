@@ -60,6 +60,8 @@ export const routeName: IRoutePath[] = [
     },
 ]
 
+export const homeRoute = routeName[0]
+
 export function getRoute(name: string) {
     return routeName.find(item => item.key === name)
 }

@@ -16,9 +16,6 @@ const menuOptions: MenuOption [] = [
         icon: () => h(NImage, {previewDisabled: true, src: icon, style: {height: "24px", width: "24px"}}),
     },
     {key: 'divider-1', type: 'divider'},
-
-    {key: 'divider-2', type: 'divider'},
-
     {
         label: () => h("a", {onClick: () => emitter.emit(definedEvent.ChangeTheme)}, "切换主题"),
         key: "Theme",

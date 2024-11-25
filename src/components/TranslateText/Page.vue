@@ -13,7 +13,7 @@ import {
 } from "../../models/text/translation.ts";
 import storageManager, {StorageKey} from "../../storage";
 import {ITranslateItem} from "../../models/scripts/translation.ts";
-import router, {getRoute} from "../../router";
+import router, {homeRoute} from "../../router";
 import {
     ContentCopyRound,
     DarkModeRound,
@@ -122,7 +122,7 @@ const menuOptions: MenuOption [] = [
             previewDisabled: true,
             src: icon,
             style: {height: "24px", width: "24px"},
-            onClick: () => router.push(getRoute("Home").path)
+            onClick: () => router.push(homeRoute.path)
         }),
     },
     {key: 'divider-1', type: 'divider'},
