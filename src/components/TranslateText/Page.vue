@@ -113,6 +113,16 @@ const downloadFile = (withOrigin: boolean) => {
     a.click()
     URL.revokeObjectURL(url)
 }
+const loadFromBrowser = () => {
+    const translateData = storageManager.getArray<ITextTranslation>(StorageKey.textData)// localStorage.getItem('translate') ?? "[]"
+    const sourceFile = storageManager.getString(StorageKey.textFile) // localStorage.getItem('sourceFile') ?? ""
+    if (translateData && sourceFile) {
+        currentScript.push(...translateData)
+        currentScriptName.value = sourceFile
+        message.success('已加载缓存数据')
+    }
+    saveToBrowser()
+}
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [
     {
@@ -164,6 +174,9 @@ const copyChar = (value: string) => {
 }
 
 onMounted(async () => {
+    const sourceFile = storageManager.getString(StorageKey.textFile)
+    if (!!sourceFile) loadFromBrowser()
+    
     document.onkeydown = function (event) {
         let key = event.key.toLowerCase();
         if (key === 's' && event.ctrlKey) {

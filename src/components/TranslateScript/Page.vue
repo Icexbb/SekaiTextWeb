@@ -196,9 +196,9 @@ const downloadFile = () => {
     URL.revokeObjectURL(url)
 }
 const loadFromBrowser = () => {
-    const translateData = storageManager.getArray<ITranslateItem>(StorageKey.scriptData)// localStorage.getItem('translate') ?? "[]"
-    const sourceFile = storageManager.getString(StorageKey.scriptFile) // localStorage.getItem('sourceFile') ?? ""
-    const sourceId = storageManager.getString(StorageKey.scriptId)//localStorage.getItem('sourceId') ?? ""
+    const translateData = storageManager.getArray<ITranslateItem>(StorageKey.scriptData)
+    const sourceFile = storageManager.getString(StorageKey.scriptFile) 
+    const sourceId = storageManager.getString(StorageKey.scriptId)
     if (translateData && sourceFile) {
         currentScript.push(...translateData)
         currentScriptName.value = sourceFile
@@ -266,7 +266,7 @@ const copyChar = (value: string) => {
 }
 
 onMounted(async () => {
-    const sourceFile = localStorage.getItem('sourceFile')
+    const sourceFile = storageManager.getString(StorageKey.scriptFile)
     if (!!sourceFile) loadFromBrowser()
 
     document.onkeydown = function (event) {
