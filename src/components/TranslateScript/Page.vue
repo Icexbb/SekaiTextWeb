@@ -32,7 +32,7 @@ import {specialCharOption, UploadOption} from "../../models/constants.ts";
 import {definedEvent, emitter} from "../../event/emitter.ts";
 import {IScript} from "../../models/scripts/model.ts";
 import storageManager, {StorageKey} from "../../storage";
-import router, {getRoute, homeRoute} from "../../router";
+import router, {homeRoute} from "../../router";
 import ConfirmOverride from "../General/ConfirmOverride.vue";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
