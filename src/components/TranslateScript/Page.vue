@@ -33,7 +33,8 @@ import {definedEvent, emitter} from "../../event/emitter.ts";
 import {IScript} from "../../models/scripts/model.ts";
 import storageManager, {StorageKey} from "../../storage";
 import router, {homeRoute} from "../../router";
-import ConfirmOverride from "../General/ConfirmOverride.vue";
+import Confirm from "../General/Confirm.vue";
+import PageSider from "../General/PageSider.vue";
 
 const updateItem = (index: number, updatedItem: ITranslateItem) => {
     const updateName = (origin: string, translated: string) => {
@@ -61,8 +62,6 @@ const updateItem = (index: number, updatedItem: ITranslateItem) => {
 }
 
 const message = useMessage()
-
-const menuCollapsed = ref<boolean>(true)
 
 const modalShowUpload = ref<boolean>(false)
 const modalShowLoadAs = ref<boolean>(false)
@@ -197,7 +196,7 @@ const downloadFile = () => {
 }
 const loadFromBrowser = () => {
     const translateData = storageManager.getArray<ITranslateItem>(StorageKey.scriptData)
-    const sourceFile = storageManager.getString(StorageKey.scriptFile) 
+    const sourceFile = storageManager.getString(StorageKey.scriptFile)
     const sourceId = storageManager.getString(StorageKey.scriptId)
     if (translateData && sourceFile) {
         currentScript.push(...translateData)
@@ -286,24 +285,7 @@ onUnmounted(() => {
 <template>
     <div>
         <n-layout has-sider class="app full-height full-width" @dragover="processDragOver">
-            <n-layout-sider
-                bordered
-                collapse-mode="width"
-                :collapsed-width="40"
-                :width="240"
-                :collapsed="menuCollapsed"
-                :show-trigger="false"
-
-                @collapse="()=>{menuCollapsed = true}"
-                @expand="()=>{menuCollapsed = false}"
-            >
-                <n-menu
-                    :collapsed="menuCollapsed"
-                    :collapsed-width="40"
-                    :collapsed-icon-size="20"
-                    :options="menuOptions"
-                />
-            </n-layout-sider>
+            <PageSider :menu-options="menuOptions"/>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
                     <n-grid :cols="12">
@@ -374,7 +356,8 @@ onUnmounted(() => {
             </n-card>
         </n-modal>
         <n-modal v-model:show="modalConfirmLoad">
-            <ConfirmOverride :on-confirm="applyScript" :on-cancel="()=>modalConfirmLoad=false"/>
+            <Confirm content="确定要覆盖加载源文件吗：" :on-confirm="applyScript"
+                     :on-cancel="()=>modalConfirmLoad=false"/>
         </n-modal>
     </div>
 </template>

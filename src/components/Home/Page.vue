@@ -7,6 +7,7 @@ import {definedEvent, emitter} from "../../event/emitter.ts";
 import {renderIcon} from "../../utils";
 
 import router, {routeName} from "../../router";
+import PageSider from "../General/PageSider.vue";
 
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [
@@ -32,21 +33,7 @@ const menuOptions: MenuOption [] = [
 
 <template>
     <n-layout has-sider class="app full-height full-width">
-        <n-layout-sider
-            bordered
-            collapse-mode="width"
-            :collapsed-width="40"
-            :width="240"
-            :show-trigger="false"
-            :collapsed="true"
-        >
-            <n-menu
-                :collapsed="true"
-                :collapsed-width="40"
-                :collapsed-icon-size="20"
-                :options="menuOptions"
-            />
-        </n-layout-sider>
+        <PageSider :menu-options="menuOptions"/>
         <n-layout-content bordered>
             <n-flex vertical align="center" justify="center" style="height: 100%" :size="50">
                 <n-image :src="icon" height="200" preview-disabled/>

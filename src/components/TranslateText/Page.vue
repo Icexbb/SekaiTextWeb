@@ -23,11 +23,11 @@ import {
     UploadRound
 } from "@vicons/material";
 import {definedEvent, emitter} from "../../event/emitter.ts";
-import Line from "../Home/Line.vue";
-import ConfirmOverride from "../General/ConfirmOverride.vue";
+import Line from "./Line.vue";
+import Confirm from "../General/Confirm.vue";
+import PageSider from "../General/PageSider.vue";
 
 const modalShowUpload = ref<boolean>(false)
-const menuCollapsed = ref<boolean>(true)
 const modalConfirmLoad = ref<boolean>(false)
 const modalShowSaveAs = ref<boolean>(false)
 
@@ -176,7 +176,7 @@ const copyChar = (value: string) => {
 onMounted(async () => {
     const sourceFile = storageManager.getString(StorageKey.textFile)
     if (!!sourceFile) loadFromBrowser()
-    
+
     document.onkeydown = function (event) {
         let key = event.key.toLowerCase();
         if (key === 's' && event.ctrlKey) {
@@ -193,24 +193,7 @@ onUnmounted(() => {
 <template>
     <div>
         <n-layout has-sider class="app full-height full-width" @dragover="processDragOver">
-            <n-layout-sider
-                bordered
-                collapse-mode="width"
-                :collapsed-width="40"
-                :width="240"
-                :collapsed="menuCollapsed"
-                :show-trigger="false"
-
-                @collapse="()=>{menuCollapsed = true}"
-                @expand="()=>{menuCollapsed = false}"
-            >
-                <n-menu
-                    :collapsed="menuCollapsed"
-                    :collapsed-width="40"
-                    :collapsed-icon-size="20"
-                    :options="menuOptions"
-                />
-            </n-layout-sider>
+            <PageSider :menu-options="menuOptions"/>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
                     <n-grid :cols="12">
@@ -261,7 +244,8 @@ onUnmounted(() => {
             <UploadCard :on-upload="onUpload" style="width: 80% ;height: 40vh;"/>
         </n-modal>
         <n-modal v-model:show="modalConfirmLoad">
-            <ConfirmOverride :on-confirm="applyScript" :on-cancel="()=>modalConfirmLoad=false"/>
+            <Confirm content="确定要覆盖加载源文件吗：" :on-confirm="applyScript"
+                     :on-cancel="()=>modalConfirmLoad=false"/>
         </n-modal>
         <n-modal v-model:show="modalShowSaveAs">
             <n-card style="height: 60%;width: 80%">

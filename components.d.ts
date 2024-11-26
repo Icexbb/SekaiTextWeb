@@ -7,9 +7,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    GeneralConfirmOverride: typeof import('./src/components/General/ConfirmOverride.vue')['default']
+    GeneralConfirm: typeof import('./src/components/General/Confirm.vue')['default']
+    GeneralPageSider: typeof import('./src/components/General/PageSider.vue')['default']
     GeneralUpload: typeof import('./src/components/General/Upload.vue')['default']
-    HomeLine: typeof import('./src/components/Home/Line.vue')['default']
     HomePage: typeof import('./src/components/Home/Page.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
@@ -33,15 +33,18 @@ declare module 'vue' {
     NPopover: typeof import('naive-ui')['NPopover']
     NPopselect: typeof import('naive-ui')['NPopselect']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
+    NSlider: typeof import('naive-ui')['NSlider']
     NStatistic: typeof import('naive-ui')['NStatistic']
     NText: typeof import('naive-ui')['NText']
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TimelineLrcPage: typeof import('./src/components/TimelineLrc/Page.vue')['default']
     TranslateScriptDialog: typeof import('./src/components/TranslateScript/Dialog.vue')['default']
     TranslateScriptEffect: typeof import('./src/components/TranslateScript/Effect.vue')['default']
     TranslateScriptPage: typeof import('./src/components/TranslateScript/Page.vue')['default']
+    TranslateTextLine: typeof import('./src/components/TranslateText/Line.vue')['default']
     TranslateTextPage: typeof import('./src/components/TranslateText/Page.vue')['default']
   }
 }
