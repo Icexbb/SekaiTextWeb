@@ -2,78 +2,79 @@
     <n-layout-footer bordered style="padding: 10px 30px 10px 30px;height: 80px">
         <n-grid :cols="12">
             <n-gi :span="2">
-                <n-statistic label="控制">
-                    <n-flex>
-                        <n-button @click="togglePlay">
-                            <n-icon>
+                <n-flex>
+                    <n-statistic label="控制">
+                        <n-flex>
+                            <n-icon @click="togglePlay">
                                 <PauseRound v-if="audioPlaying"/>
                                 <PlayArrowRound v-else/>
                             </n-icon>
-                        </n-button>
-                    </n-flex>
-                </n-statistic>
+                            <n-popover style="max-height: 200px;">
+                                <template #trigger>
+                                    <n-icon @wheel="(e:WheelEvent)=>audioManager.gain-=Math.sign(e.deltaY)*0.01">
+                                        <VolumeUpRound v-if="gainValue>=0.6"/>
+                                        <VolumeDownRound v-else-if="gainValue!=0"></VolumeDownRound>
+                                        <VolumeMuteRound v-else/>
+                                    </n-icon>
+                                </template>
+                                <template #default>
+                                    <n-flex style="height: 100px;" align="stretch" justify="center">
+                                        <n-slider :value="gainValue" vertical
+                                                  :format-tooltip="(v)=>(v*100).toFixed(0)"
+                                                  :max="1" :min="0" :step="0.01"
+                                                  @update:value="(v)=>{audioManager.gain = v}"
+                                        />
+                                    </n-flex>
+                                </template>
+                                <template #footer>
+                                    <n-flex justify="center">
+                                        <n-text>{{ threshold(0, gainValue * 100, 100).toFixed(0) }}</n-text>
+                                    </n-flex>
+                                </template>
+                            </n-popover>
+                            <n-popover style="max-height: 200px">
+                                <template #trigger>
+                                    <n-icon @click="()=>{audioManager.speed=1}">
+                                        <SpeedRound/>
+                                    </n-icon>
+                                </template>
+                                <template #default>
+                                    <n-flex style="height: 100px;" align="stretch" justify="center">
+                                        <n-slider :value="speedValue" vertical :tooltip="false"
+                                                  :max="1" :min="0" :step="0.01"
+                                                  @update:value="(v)=>{audioManager.speed = deLogSpeed(v)}"
+                                        >
+                                        </n-slider>
+                                    </n-flex>
+                                </template>
+                                <template #footer>
+                                    <n-flex justify="center">
+                                        <n-text>{{ threshold(0.1, deLogSpeed(speedValue), 5).toFixed(1) }}</n-text>
+                                    </n-flex>
+                                </template>
+                            </n-popover>
+                        </n-flex>
+
+                    </n-statistic>
+                </n-flex>
+
             </n-gi>
-            <n-gi :span="8">
+            <n-gi :span="10">
                 <n-statistic :label="`${showName?audioName+' ':''}${formatLyricTime(audioProgress)}`">
                     <n-flex>
                         <n-slider :value="audioProgress" :format-tooltip="formatLyricTime"
-                                  :max="audioDuration" :step="0.01" style="width: 95%;"
+                                  :max="audioDuration" :step="0.01" style="width: 100%;"
                                   @update:value="(v)=>{audioManager.currentAt = v}"
                         />
                     </n-flex>
                 </n-statistic>
             </n-gi>
-            <n-gi :span="1">
-                <n-statistic label="音量控制">
-                    <n-flex>
-                        <n-popover style="height: 100px;width: 40px">
-                            <template #trigger>
-                                <n-icon @wheel="(e:WheelEvent)=>audioManager.gain-=Math.sign(e.deltaY)*0.01">
-                                    <VolumeUpRound v-if="gainValue>=0.6"/>
-                                    <VolumeDownRound v-else-if="gainValue!=0"></VolumeDownRound>
-                                    <VolumeMuteRound v-else/>
-                                </n-icon>
-                            </template>
-                            <template #default>
-                                <n-flex style="height: 100px;width: 100%" align="stretch" justify="center">
-                                    <n-slider :value="gainValue" vertical
-                                              :format-tooltip="(v)=>(v*100).toFixed(0)"
-                                              :max="1" :min="0" :step="0.01"
-                                              @update:value="(v)=>{audioManager.gain = v}"
-                                    />
-                                </n-flex>
-                            </template>
-                        </n-popover>
-                    </n-flex>
-                </n-statistic>
-            </n-gi>
-            <n-gi :span="1">
-                <n-statistic label="速度控制">
-                    <n-flex>
-                        <n-popover style="height: 100px;width: 40px">
-                            <template #trigger>
-                                <n-icon @click="()=>{audioManager.speed=1}">
-                                    <SpeedRound/>
-                                </n-icon>
-                            </template>
-                            <template #default>
-                                <n-flex style="height: 100px;width: 100%" align="stretch" justify="center">
-                                    <n-slider :value="speedValue" vertical
-                                              :format-tooltip="(v)=>deLogSpeed(v).toFixed(1)"
-                                              :max="1" :min="0" :step="0.01"
-                                              @update:value="(v)=>{audioManager.speed = deLogSpeed(v)}"
-                                    />
-                                </n-flex>
-                            </template>
-                        </n-popover>
-                    </n-flex>
-                </n-statistic>
-            </n-gi>
+
         </n-grid>
     </n-layout-footer>
 </template>
 <script setup lang="ts">
-import {ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {
     PauseRound,
     PlayArrowRound,
@@ -84,6 +85,7 @@ import {
 } from "@vicons/material";
 import audioManager from "../../utils/audio.ts";
 import {formatLyricTime} from "../../models/lyric/model.ts";
+import {threshold} from "../../utils";
 
 const {showName = false} = defineProps<{
     showName?: boolean
@@ -129,5 +131,13 @@ function togglePlay() {
         audioManager.resume()
     }
 }
+
+onMounted(() => {
+    audioManager.init()
+})
+
+onUnmounted(() => {
+    audioManager.pause()
+})
 
 </script>

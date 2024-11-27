@@ -1,16 +1,16 @@
 <script setup lang="ts">
 
-import {h, onMounted, onUnmounted, ref} from "vue";
-import {extName, readFileAsText, renderIcon} from "../../utils";
+import {h, onMounted, onUnmounted, reactive, ref} from "vue";
+import {changeExt, extName, readFileAsText, renderIcon} from "../../utils";
 import {
     AudioFileRound,
     DarkModeRound,
     DownloadRound,
+    FactCheckRound,
     PlaylistRemoveRound,
     SaveRound,
     TextSnippetRound,
-    UploadRound,
-    FactCheckRound
+    UploadRound
 } from "@vicons/material"
 import {MenuOption, NFlex, NImage, useMessage} from "naive-ui"
 import UploadCard from "../General/Upload.vue";
@@ -22,7 +22,7 @@ import {UploadOption} from "../../models/constants.ts";
 import audioManager from "../../utils/audio.ts";
 import PageSider from "../General/PageSider.vue";
 import Line from "./Line.vue";
-import {buildLyricData, ILyricItem} from "../../models/lyric/model.ts";
+import {buildLyricData, exportLyric, ILyricItem} from "../../models/lyric/model.ts";
 import AudioControlFooter from "./AudioControlFooter.vue";
 
 const message = useMessage()
@@ -33,36 +33,67 @@ const modalConfirmLoad = ref<boolean>(false)
 
 const currentAudioName = ref<string>("")
 const currentLyricName = ref<string>("")
-const currentLyricData = ref<ILyricItem[]>([])
+const currentLyricData = reactive<ILyricItem[]>([])
 
 const tempAudioName = ref<string>("")
 const tempLyricName = ref<string>("")
-const tempLyricData = ref<ILyricItem[]>([])
+const tempLyricData = reactive<ILyricItem[]>([])
 
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 
-function saveToBrowser(_0: boolean, _1: boolean) {
+const showSaveLog = ref(true)
 
+function saveToBrowser(showLog = true, forceShowLog = false) {
+    storageManager.setArray(StorageKey.lyricData, currentLyricData)
+    storageManager.setString(StorageKey.lyricFile, currentLyricName.value)
+    if (showLog && showSaveLog.value && currentLyricName.value.length > 0 || forceShowLog) {
+        message.success('保存成功')
+        showSaveLog.value = false
+        setTimeout(() => showSaveLog.value = true, 1000 * 60)
+    }
 }
 
 function downloadFile() {
-
+    const blob = new Blob([exportLyric(currentLyricData)], {type: 'application/plain'})
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = changeExt(currentLyricName.value, '.txt')
+    a.click()
+    URL.revokeObjectURL(url)
 }
 
 function clearData() {
-
+    while (currentLyricData.length > 0) currentLyricData.pop()
+    while (tempLyricData.length > 0) tempLyricData.pop()
+    currentLyricName.value = ""
+    tempAudioName.value = ""
+    audioManager.stop()
+    saveToBrowser(false)
+    message.success('清除完成')
 }
 
 function applyLyric() {
+    while (currentLyricData.length > 0) currentLyricData.pop()
+    currentLyricData.push(...tempLyricData)
     currentLyricName.value = tempLyricName.value;
-    currentLyricData.value = tempLyricData.value;
+
     tempLyricName.value = ""
-    tempLyricData.value = []
+    while (tempLyricData.length > 0) tempLyricData.pop()
+
     modalConfirmLoad.value = false
+    saveToBrowser()
 }
 
 function loadFromBrowser() {
-    message.success("")
+    const lyricData = storageManager.getArray<ILyricItem>(StorageKey.lyricData)
+    const lyricFile = storageManager.getString(StorageKey.lyricFile)
+    if (lyricData && lyricFile) {
+        currentLyricData.push(...lyricData)
+        currentLyricName.value = lyricFile
+        message.success('已加载缓存数据')
+    }
+    saveToBrowser()
 }
 
 function processDragOver(event: DragEvent) {
@@ -82,7 +113,8 @@ async function onUploadText(option: UploadOption) {
             const content = await readFileAsText(file)
             const data = buildLyricData(content)
             tempLyricName.value = file.name
-            tempLyricData.value = data
+            while (tempLyricData.length > 0) tempLyricData.pop()
+            tempLyricData.push(...data)
             if (currentLyricName.value.length > 0 && currentLyricName.value != tempLyricName.value) {
                 modalConfirmLoad.value = true
             } else {
@@ -167,25 +199,46 @@ onMounted(() => {
             event.preventDefault(); //关闭浏览器快捷键
             saveToBrowser(true, true)
         }
+        if (key === " " && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+            event.preventDefault()
+            hitSpace()
+        }
     }
 });
 onUnmounted(() => {
     document.onkeydown = null;
 });
+
+const currentProgress = ref<number>(0)
+
+function hitSpace() {
+    currentLyricData[currentProgress.value].offset = audioManager.currentAt
+    if (currentProgress.value == currentLyricData.length - 1) {
+        currentProgress.value = 0
+    } else {
+        currentProgress.value++;
+    }
+}
+
+function clickToLine(value) {
+    currentProgress.value = value
+}
 </script>
 
 <template>
-    <div>
+    <div @keydown.space.exact="hitSpace">
         <n-layout has-sider class="app full-height full-width" @dragover="processDragOver">
             <PageSider :menu-options="menuOptions"/>
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
                     <n-grid :cols="12">
                         <n-gi span="6">
-                            <n-statistic label="歌曲" > {{currentAudioName.length>0?currentAudioName:'未选择'}}</n-statistic>
+                            <n-statistic label="歌曲"> {{ currentAudioName.length > 0 ? currentAudioName : '未选择' }}
+                            </n-statistic>
                         </n-gi>
                         <n-gi span="6">
-                            <n-statistic label="歌词" > {{currentLyricName.length>0?currentLyricName:'未选择'}}</n-statistic>
+                            <n-statistic label="歌词"> {{ currentLyricName.length > 0 ? currentLyricName : '未选择' }}
+                            </n-statistic>
                         </n-gi>
                     </n-grid>
                 </n-layout-header>
@@ -207,7 +260,8 @@ onUnmounted(() => {
                     <n-scrollbar v-else>
                         <n-flex style="padding:20px 5px 20px 5px" vertical>
                             <template v-for="(item) in currentLyricData" :key="`${currentLyricName}-${item.id}`">
-                                <Line :data="item"/>
+                                <Line :data="item" :progress="currentProgress"
+                                      @on-click="clickToLine"/>
                             </template>
                         </n-flex>
                     </n-scrollbar>

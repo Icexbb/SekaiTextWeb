@@ -11,8 +11,11 @@ export enum StorageKey {
     sekaiDataUpdateTime = "sekaiDataUpdateTime",
     
     sekaiDataEvent = "sekaiDataEvent",
-    sekaiDataUnitStory = "sekaiDataUnitStory"
+    sekaiDataUnitStory = "sekaiDataUnitStory",
 
+    lyricData="lyricData",
+    lyricFile = "lyricFile"
+        
 }
 
 const storageEmitter = mitt()

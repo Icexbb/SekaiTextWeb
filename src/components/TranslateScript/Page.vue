@@ -83,6 +83,8 @@ const applyScript = () => {
     currentScriptName.value = tempLoadedScriptName.value
     currentScriptId.value = tempLoadedScriptId.value
 
+    tempLoadedScriptId.value = ""
+    tempLoadedScriptName.value = ""
     while (tempLoadedScript.length > 0) tempLoadedScript.pop()
 
     modalConfirmLoad.value = false
@@ -206,13 +208,6 @@ const loadFromBrowser = () => {
     }
     saveToBrowser()
 }
-
-// const fetchEventDataNow = async () => {
-//     const data = await updateEventData(true)
-//     if (data) message.success("闪回数据已更新")
-//     else message.error("闪回数据更新失败")
-// }
-
 
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 const menuOptions: MenuOption [] = [

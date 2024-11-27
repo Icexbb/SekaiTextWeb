@@ -43,3 +43,7 @@ export const renderIcon = (icon: any, props?: any) => () => h(NIcon, props, {def
 export function extName(path: string) {
     return path.match(/\.\w+$/)?.[0]?.toLowerCase()
 }
+
+export const threshold = (min: number, value: number, max: number) => {
+    return Math.min(Math.max(min, value), max)
+}

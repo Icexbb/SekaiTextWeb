@@ -7,10 +7,19 @@ class AudioManager {
     private initialized = false
     private audioBuffer: AudioBuffer | null = null
     private audioSource: AudioBufferSourceNode | null = null
-    private startAt = 0
-    private pausedAt = 0
+    // private startAt = 0
+    // private pausedAt = 0
     private currentTime = 0;
     private playbackRate = 0
+
+    constructor() {
+        setInterval(() => {
+            if (!this.initialized) return;
+            if (this.playing) {
+                this.currentTime += this.speed * 0.005
+            }
+        }, 5)
+    }
 
     private _context: AudioContext | undefined
 
@@ -31,10 +40,10 @@ class AudioManager {
     }
 
     get currentAt() {
-        if (this.sourceStarted) {
-            this.pausedAt = new Date().getTime() / 1000
-        }
-        this.currentTime = this.pausedAt - this.startAt
+        // if (this.sourceStarted) {
+        //     this.pausedAt = new Date().getTime() / 1000
+        // }
+        // this.currentTime = this.pausedAt - this.startAt
         return this.currentTime
     }
 
@@ -46,9 +55,10 @@ class AudioManager {
                 this.play(value)
             }, 10)
         } else {
-            const now = new Date().getTime() / 1000
-            this.startAt = now - value
-            this.pausedAt = now
+            this.currentTime = value
+            // const now = new Date().getTime() / 1000
+            // this.startAt = now - value
+            // this.pausedAt = now
         }
     }
 
@@ -126,6 +136,14 @@ class AudioManager {
         this.stopSource()
     }
 
+    stop() {
+        this.stopSource()
+        this.audioBuffer = null;
+        this.audioName = "";
+        this.currentTime = 0;
+        this.getSource()
+    }
+
 
     private getSource() {
         if (this.audioSource) {
@@ -152,14 +170,13 @@ class AudioManager {
             this.getSource()
         }
         this.audioSource!.start(0, startAt, duration)
-        this.startAt = new Date().getTime() / 1000 - startAt
+        this.currentTime = startAt
         this.sourceStarted = true
     }
 
     private stopSource() {
         if (!this.audioSource) return;
         if (this.playing) this.audioSource.stop()
-        this.pausedAt = new Date().getTime() / 1000
         this.getSource()
     }
 
