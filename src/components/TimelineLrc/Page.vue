@@ -220,7 +220,7 @@ function hitSpace() {
     }
 }
 
-function clickToLine(value) {
+function clickToLine(value:number) {
     currentProgress.value = value
 }
 </script>

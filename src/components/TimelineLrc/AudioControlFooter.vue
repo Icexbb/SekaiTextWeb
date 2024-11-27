@@ -20,9 +20,9 @@
                                 <template #default>
                                     <n-flex style="height: 100px;" align="stretch" justify="center">
                                         <n-slider :value="gainValue" vertical
-                                                  :format-tooltip="(v)=>(v*100).toFixed(0)"
+                                                  :format-tooltip="(v:number)=>(v*100).toFixed(0)"
                                                   :max="1" :min="0" :step="0.01"
-                                                  @update:value="(v)=>{audioManager.gain = v}"
+                                                  @update:value="(v:number)=>{audioManager.gain = v}"
                                         />
                                     </n-flex>
                                 </template>
@@ -42,7 +42,7 @@
                                     <n-flex style="height: 100px;" align="stretch" justify="center">
                                         <n-slider :value="speedValue" vertical :tooltip="false"
                                                   :max="1" :min="0" :step="0.01"
-                                                  @update:value="(v)=>{audioManager.speed = deLogSpeed(v)}"
+                                                  @update:value="(v:number)=>{audioManager.speed = deLogSpeed(v)}"
                                         >
                                         </n-slider>
                                     </n-flex>
@@ -64,7 +64,7 @@
                     <n-flex>
                         <n-slider :value="audioProgress" :format-tooltip="formatLyricTime"
                                   :max="audioDuration" :step="0.01" style="width: 100%;"
-                                  @update:value="(v)=>{audioManager.currentAt = v}"
+                                  @update:value="(v:number)=>{audioManager.currentAt = v}"
                         />
                     </n-flex>
                 </n-statistic>
