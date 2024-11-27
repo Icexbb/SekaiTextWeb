@@ -2,6 +2,7 @@ import {readFileAsArrayBuffer} from "./index.ts";
 
 
 class AudioManager {
+    audioName: string = ""
     private sourceStarted = false
     private initialized = false
     private audioBuffer: AudioBuffer | null = null
@@ -9,7 +10,7 @@ class AudioManager {
     private startAt = 0
     private pausedAt = 0
     private currentTime = 0;
-
+    private playbackRate = 0
 
     private _context: AudioContext | undefined
 
@@ -51,6 +52,15 @@ class AudioManager {
         }
     }
 
+    get gain() {
+        if (this.initialized) return this.gainNode.gain.value
+        return 1
+    }
+
+    set gain(value: number) {
+        this.gainNode.gain.value = value
+    }
+
     get playing() {
         return this.sourceStarted
     }
@@ -65,11 +75,29 @@ class AudioManager {
         this.currentAt = value * this.duration
     }
 
+    get speed() {
+        if (this.audioSource) {
+            return this.audioSource.playbackRate.value
+        } else {
+            return this.playbackRate
+        }
+    }
+
+    set speed(value: number) {
+        if (this.audioSource) {
+            this.audioSource.playbackRate.value = Math.min(this.audioSource.playbackRate.maxValue, Math.max(this.audioSource.playbackRate.minValue, value))
+        } else {
+            this.playbackRate = value
+        }
+    }
+
     init() {
         if (!this.initialized) {
             this._context = new AudioContext()
-            this._gainNode = this._context.createGain()
-            this._gainNode.connect(this._context.destination);
+            this._gainNode = new GainNode(this._context, {
+                gain: this.gain
+            })
+            this._gainNode.connect(this._context.destination)
             this.initialized = true
         }
     }
@@ -80,6 +108,7 @@ class AudioManager {
         }
         const arrayBuffer = await readFileAsArrayBuffer(file)
         this.audioBuffer = await this.decodeAudioData(arrayBuffer);
+        this.audioName = file.name
         this.getSource()
     }
 
@@ -103,9 +132,12 @@ class AudioManager {
             this.audioSource.disconnect()
             this.audioSource = null;
         }
-        const audioSource = this.context.createBufferSource();
-        audioSource.buffer = this.audioBuffer;
+        const audioSource = new AudioBufferSourceNode(this.context, {
+            buffer: this.audioBuffer,
+            playbackRate: this.playbackRate == 0 ? undefined : this.playbackRate
+        });
         audioSource.connect(this.gainNode);
+        this.playbackRate = audioSource.playbackRate.value
         this.audioSource = audioSource;
         this.sourceStarted = false;
         this.audioSource.onended = () => {

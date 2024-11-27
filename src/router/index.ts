@@ -49,7 +49,6 @@ export const routeName: IRoutePath[] = [
         name: "Lrc歌词制作",
         path: "/timeline/lrc",
         icon: QueueMusicRound,
-        disabled: true
     },
     {
         key: "TimelineSrt",

@@ -2,9 +2,12 @@
 import {NIcon, NText} from "naive-ui"
 import {UploadOption} from "../../models/constants.ts";
 import {UploadRound} from "@vicons/material"
+import type {Component} from "vue";
 
-const {onUpload} = defineProps<{
+const {onUpload, icon = UploadRound, disabled} = defineProps<{
     onUpload: (options: UploadOption) => void
+    icon?: Component
+    disabled?: boolean
 }>()
 </script>
 <template>
@@ -15,12 +18,14 @@ const {onUpload} = defineProps<{
             @change="onUpload"
             trigger-style="height: 100%"
             style="height: 100%"
+            multiple
+            :disabled="disabled"
         >
             <n-upload-dragger style="height: 100%;width: 100%">
                 <n-flex vertical justify="center" style="height: 100%">
                     <div style="margin-bottom: 12px">
                         <n-icon size="48" depth="3">
-                            <UploadRound/>
+                            <component :is="icon"/>
                         </n-icon>
                     </div>
                     <n-text style="font-size: 16px">

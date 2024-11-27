@@ -319,7 +319,7 @@ onUnmounted(() => {
                             style="height: calc(100vh - 90px)">
                         <UploadCard :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
                     </n-flex>
-                    <n-scrollbar>
+                    <n-scrollbar v-else>
                         <n-flex style="padding:20px 5px 20px 5px" vertical>
                             <template v-for="(item, index) in currentScript"
                                       :key="`${currentScriptName}-${item.id}`">

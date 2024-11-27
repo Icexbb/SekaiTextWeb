@@ -40,6 +40,8 @@ declare module 'vue' {
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TimelineLrcAudioControlFooter: typeof import('./src/components/TimelineLrc/AudioControlFooter.vue')['default']
+    TimelineLrcLine: typeof import('./src/components/TimelineLrc/Line.vue')['default']
     TimelineLrcPage: typeof import('./src/components/TimelineLrc/Page.vue')['default']
     TranslateScriptDialog: typeof import('./src/components/TranslateScript/Dialog.vue')['default']
     TranslateScriptEffect: typeof import('./src/components/TranslateScript/Effect.vue')['default']

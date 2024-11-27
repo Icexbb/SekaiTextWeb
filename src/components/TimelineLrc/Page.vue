@@ -1,15 +1,16 @@
 <script setup lang="ts">
 
 import {h, onMounted, onUnmounted, ref} from "vue";
-import {extName, renderIcon} from "../../utils";
+import {extName, readFileAsText, renderIcon} from "../../utils";
 import {
+    AudioFileRound,
     DarkModeRound,
     DownloadRound,
-    PauseRound,
-    PlayArrowRound,
     PlaylistRemoveRound,
     SaveRound,
-    UploadRound
+    TextSnippetRound,
+    UploadRound,
+    FactCheckRound
 } from "@vicons/material"
 import {MenuOption, NFlex, NImage, useMessage} from "naive-ui"
 import UploadCard from "../General/Upload.vue";
@@ -20,6 +21,9 @@ import Confirm from "../General/Confirm.vue";
 import {UploadOption} from "../../models/constants.ts";
 import audioManager from "../../utils/audio.ts";
 import PageSider from "../General/PageSider.vue";
+import Line from "./Line.vue";
+import {buildLyricData, ILyricItem} from "../../models/lyric/model.ts";
+import AudioControlFooter from "./AudioControlFooter.vue";
 
 const message = useMessage()
 
@@ -29,11 +33,11 @@ const modalConfirmLoad = ref<boolean>(false)
 
 const currentAudioName = ref<string>("")
 const currentLyricName = ref<string>("")
-const currentLyricData = ref<string[]>([])
+const currentLyricData = ref<ILyricItem[]>([])
 
 const tempAudioName = ref<string>("")
 const tempLyricName = ref<string>("")
-const tempLyricData = ref<string[]>([])
+const tempLyricData = ref<ILyricItem[]>([])
 
 const icon = new URL(`/public/icon.ico`, import.meta.url).href
 
@@ -62,33 +66,41 @@ function loadFromBrowser() {
 }
 
 function processDragOver(event: DragEvent) {
-    if (currentLyricName.value.length == 0) return
+    if (currentLyricName.value.length == 0 || currentAudioName.value.length == 0) return
     if (event.dataTransfer?.types!.every(t => t == "Files")) {
         modalShowUpload.value = true;
     }
 }
 
-const playbackDuration = ref<number>(0)
-const playbackProgress = ref<number>(0)
-const playBarProgress = ref<number>(0)
-const playbackSyncing = ref<boolean>(true)
-const playbackPlaying = ref<boolean>(false)
-setInterval(() => {
-    playbackPlaying.value = audioManager.playing
-    playbackProgress.value = audioManager.currentAt
-    playbackDuration.value = audioManager.duration
-    if (playbackSyncing.value) {
-        playBarProgress.value = playbackProgress.value
-    }
-}, 50)
 
-async function onUpload(option: UploadOption) {
+async function onUploadText(option: UploadOption) {
     modalShowUpload.value = false;
     const file = option.file.file!;
 
     switch (extName(file.name)) {
         case ".txt":
+            const content = await readFileAsText(file)
+            const data = buildLyricData(content)
+            tempLyricName.value = file.name
+            tempLyricData.value = data
+            if (currentLyricName.value.length > 0 && currentLyricName.value != tempLyricName.value) {
+                modalConfirmLoad.value = true
+            } else {
+                applyLyric()
+            }
             break;
+        default:
+            message.error("不支持的文件类型")
+    }
+
+    option.fileList = []
+}
+
+async function onUploadAudio(option: UploadOption) {
+    modalShowUpload.value = false;
+    const file = option.file.file!;
+
+    switch (extName(file.name)) {
         case ".mp3":
         case ".wav":
         case ".flac":
@@ -96,10 +108,9 @@ async function onUpload(option: UploadOption) {
             tempAudioName.value = file.name
             currentAudioName.value = file.name
             await audioManager.loadFile(file)
-            audioManager.play()
-
-
             break;
+        default:
+            message.error("不支持的文件类型")
     }
 
     option.fileList = []
@@ -145,31 +156,6 @@ const menuOptions: MenuOption [] = [
     },
 ]
 
-function seekStart() {
-    playbackSyncing.value = false
-}
-
-function seekEnd() {
-    playbackSyncing.value = false
-}
-
-function seekProgress(value: number) {
-    audioManager.currentAt = value
-}
-
-function formatTime(value: number): string {
-    const min = Math.floor(value / 60)
-    const sec = Math.floor(value % 60)
-    return `${min}:${sec < 10 ? '0' + sec : sec}`
-}
-
-function togglePlay() {
-    if (audioManager.playing) {
-        audioManager.pause()
-    } else {
-        audioManager.resume()
-    }
-}
 
 onMounted(() => {
     const sourceFile = storageManager.getString(StorageKey.scriptFile)
@@ -195,47 +181,55 @@ onUnmounted(() => {
             <n-layout embedded :native-scrollbar="false" style="height: 100vh;">
                 <n-layout-header bordered style="padding: 10px 30px 10px 30px;height: 85px">
                     <n-grid :cols="12">
+                        <n-gi span="6">
+                            <n-statistic label="歌曲" > {{currentAudioName.length>0?currentAudioName:'未选择'}}</n-statistic>
+                        </n-gi>
+                        <n-gi span="6">
+                            <n-statistic label="歌词" > {{currentLyricName.length>0?currentLyricName:'未选择'}}</n-statistic>
+                        </n-gi>
                     </n-grid>
                 </n-layout-header>
                 <n-layout-content bordered :native-scrollbar="false" style="height: calc(100vh - 90px - 80px)">
-                    <n-flex align="center" justify="center" v-if="currentLyricName.length==0"
+                    <n-flex align="center" justify="center"
+                            v-if="currentLyricName.length==0||currentAudioName.length==0"
                             style="height: calc(100vh - 90px - 80px)">
-                        <UploadCard :on-upload="onUpload" style="width: 90% ;height: 80%;"/>
+                        <UploadCard
+                            :disabled="currentLyricName.length>0"
+                            style="width: 45% ;height: 80%;"
+                            :on-upload="onUploadText"
+                            :icon="currentLyricName.length>0?FactCheckRound:TextSnippetRound"/>
+                        <UploadCard
+                            :disabled="currentAudioName.length>0"
+                            style="width: 45% ;height: 80%;"
+                            :on-upload="onUploadAudio"
+                            :icon="currentAudioName.length>0?FactCheckRound:AudioFileRound"/>
                     </n-flex>
-
+                    <n-scrollbar v-else>
+                        <n-flex style="padding:20px 5px 20px 5px" vertical>
+                            <template v-for="(item) in currentLyricData" :key="`${currentLyricName}-${item.id}`">
+                                <Line :data="item"/>
+                            </template>
+                        </n-flex>
+                    </n-scrollbar>
                 </n-layout-content>
-                <n-layout-footer bordered style="padding: 10px 30px 10px 30px;height: 80px">
-                    <n-grid :cols="12">
-                        <n-gi :span="2">
-                            <n-statistic label="控制">
-                                <n-flex>
-                                    <n-button @click="togglePlay">
-                                        <n-icon>
-                                            <PauseRound v-if="playbackPlaying"/>
-                                            <PlayArrowRound v-else/>
-                                        </n-icon>
-                                    </n-button>
-                                </n-flex>
-                            </n-statistic>
-                        </n-gi>
-                        <n-gi :span="8">
-                            <n-statistic :label="formatTime(playbackProgress)">
-                                <n-flex>
-                                    <n-slider :value="playbackProgress" :format-tooltip="formatTime"
-                                              :max="playbackDuration" :step="0.01"
-                                              @update:value="seekProgress"
-                                              @dragstart="seekStart"
-                                              @dragend="seekEnd"
-                                    />
-                                </n-flex>
-                            </n-statistic>
-                        </n-gi>
-                    </n-grid>
-                </n-layout-footer>
+                <AudioControlFooter/>
             </n-layout>
         </n-layout>
-        <n-modal v-model:show="modalShowUpload">
-            <UploadCard :on-upload="onUpload" style="width: 80% ;height: 40vh;"/>
+        <n-modal v-model:show="modalShowUpload" style="height: 70vh;width: 90vw;">
+            <n-card>
+                <n-flex align="center" justify="center" style="height: 100%;width: 100%;">
+                    <UploadCard
+                        :disabled="currentLyricName.length>0"
+                        style="width: 45% ;height: 80%;"
+                        :on-upload="onUploadText"
+                        :icon="currentLyricName.length>0?FactCheckRound:TextSnippetRound"/>
+                    <UploadCard
+                        :disabled="currentAudioName.length>0"
+                        style="width: 45% ;height: 80%;"
+                        :on-upload="onUploadAudio"
+                        :icon="currentAudioName.length>0?FactCheckRound:AudioFileRound"/>
+                </n-flex>
+            </n-card>
         </n-modal>
         <n-modal v-model:show="modalConfirmLoad">
             <Confirm :on-confirm="applyLyric" :on-cancel="()=>modalConfirmLoad=false"/>
